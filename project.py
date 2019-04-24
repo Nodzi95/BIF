@@ -1,8 +1,19 @@
+#!/usr/local/bin/python3
 import time
 import operator
 import sys
 
-fileN = sys.argv[1]
+opt = False
+if len(sys.argv) > 2:
+	if sys.argv[1] == "-s":
+		opt = True
+		fileN = sys.argv[2]
+	else:
+		fileN = sys.argv[1]
+		if  sys.argv[2] == "-s":
+			opt = True
+else:
+	fileN = sys.argv[1]
 f = open(fileN, "r")
 
 
@@ -144,30 +155,38 @@ def main():
             for i in range(SEQ_DIRECTION, SEQ_STOP):
                 tmp[i] = lists[i]
 
-            #vytvoreni zaznamu ve slovniku, pokud se zmenil kontext
+            #vytvoreni vsech oblasti/motivu
+            #pokud jeste neni ve slovniku G - SEQ_ID, vytvor v nem zaznam
             if tmp[SEQ_ID] not in G:
+                G[tmp[SEQ_ID]] = {}
+
+            #pokud jeste neni ve slovniku G[tmp[SEQ_ID]] - SEQ_TYPE, vytvor v nem zaznam
+            if tmp[SEQ_TYPE] not in G[tmp[SEQ_ID]]:
                 X = {}
                 Y = {}
                 X['pos'] = []
                 Y['neg'] = []
-                G[tmp[SEQ_ID]] = []
-                G[tmp[SEQ_ID]].append(X['pos'])
-                G[tmp[SEQ_ID]].append(Y['neg'])
+                G[tmp[SEQ_ID]][tmp[SEQ_TYPE]] = []
+                G[tmp[SEQ_ID]][tmp[SEQ_TYPE]].append(X['pos'])
+                G[tmp[SEQ_ID]][tmp[SEQ_TYPE]].append(Y['neg'])
 
             #ulozeni na spravne misto do slovniku
             if tmp[SEQ_DIRECTION] == '+':
-                G[tmp[SEQ_ID]][0].append(tmp)
+                G[tmp[SEQ_ID]][tmp[SEQ_TYPE]][0].append(tmp)
             else:
-                G[tmp[SEQ_ID]][1].append(tmp)
+                G[tmp[SEQ_ID]][tmp[SEQ_TYPE]][1].append(tmp)
     
     #prochazeni slovniku a zpracovani vsech zaznamu v nem
     for i in G:
-        if(len(G[i][1]) != 0):
-            G[i][1].sort(key=sortStart)
-            subProblems(G[i][1])
-        if(len(G[i][0]) != 0):
-            G[i][0].sort(key=sortStart)
-            subProblems(G[i][0])
+        for j in G[i]:
+            if(len(G[i][j][1]) != 0):
+                if not opt:
+                	G[i][j][1].sort(key=sortStart)
+                subProblems(G[i][j][1])
+            if(len(G[i][j][0]) != 0):
+                if not opt:
+                	G[i][j][0].sort(key=sortStart)
+                subProblems(G[i][j][0])
             
 main()
 
